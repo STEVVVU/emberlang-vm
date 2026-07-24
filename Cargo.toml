@@ -1,0 +1,28 @@
+[package]
+name = "emberlang-vm"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "A small statically typed compiler and sandboxed bytecode VM"
+repository = "https://github.com/STEVVVU/emberlang-vm"
+
+[[bin]]
+name = "ember"
+path = "src/main.rs"
+
+[[bin]]
+name = "benchmark"
+path = "src/bin/benchmark.rs"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = true
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+all = "warn"
+pedantic = "warn"
+
