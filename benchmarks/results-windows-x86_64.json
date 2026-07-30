@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "captured_at": "2026-07-16",
+  "command": "cargo run --release --bin benchmark",
+  "environment": {
+    "os": "Windows x86_64",
+    "rustc": "rustc 1.96.0 (ac68faa20 2026-05-25)",
+    "cpu": "not captured"
+  },
+  "profile": "release",
+  "source_bytes": 8441,
+  "source_functions": 81,
+  "compile_iterations": 200,
+  "compile_median_us": 1361,
+  "compile_p95_us": 5643,
+  "bytecode_instructions": 336,
+  "constants_folded": 402,
+  "dead_instructions_removed": 722,
+  "vm_iterations": 50,
+  "vm_total_steps": 5000400,
+  "vm_elapsed_us": 33169,
+  "vm_steps_per_second": 150755223
+}
+
