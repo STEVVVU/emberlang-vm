@@ -137,12 +137,12 @@ Windows, plus a release-mode benchmark smoke test.
 
 | Metric | Observed |
 | --- | ---: |
-| Full compile median (200 iterations) | 1.361 ms |
-| Full compile p95 | 5.643 ms |
+| Full compile median (200 iterations) | 2.197 ms |
+| Full compile p95 | 6.716 ms |
 | Constants folded per compile | 402 |
 | Dead instructions removed per compile | 722 |
 | Resulting bytecode instructions | 336 |
-| VM throughput (5,000,400 instructions) | 150.8 M instructions/s |
+| VM throughput (5,000,400 instructions) | 98.2 M instructions/s |
 
 These are single-machine engineering baselines, not universal claims. The raw
 artifact and methodology are in [`benchmarks/`](benchmarks/).
@@ -167,7 +167,7 @@ flow, a bytecode verifier, and property/fuzz testing.
   81-function benchmark they folded 402 constants and removed 722 instructions,
   producing 336 bytecode instructions.
 - Designed a sandboxed register VM with checked arithmetic and configurable
-  instruction/call/output limits; measured 150.8M instructions/s over 5.0M
+  instruction/call/output limits; measured 98.2M instructions/s over 5.0M
   release-mode dispatches on the recorded Windows baseline.
 
 ## License

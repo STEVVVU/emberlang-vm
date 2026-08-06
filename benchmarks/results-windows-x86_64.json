@@ -11,14 +11,13 @@
   "source_bytes": 8441,
   "source_functions": 81,
   "compile_iterations": 200,
-  "compile_median_us": 1361,
-  "compile_p95_us": 5643,
+  "compile_median_us": 2197,
+  "compile_p95_us": 6716,
   "bytecode_instructions": 336,
   "constants_folded": 402,
   "dead_instructions_removed": 722,
   "vm_iterations": 50,
   "vm_total_steps": 5000400,
-  "vm_elapsed_us": 33169,
-  "vm_steps_per_second": 150755223
+  "vm_elapsed_us": 50922,
+  "vm_steps_per_second": 98197242
 }
-
