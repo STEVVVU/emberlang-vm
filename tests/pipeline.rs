@@ -39,7 +39,8 @@ fn golden_type_error_is_stable() {
     let source = include_str!("golden/type_error.em");
     let diagnostics = compile(source, CompileOptions::default()).unwrap_err();
     let actual = render_all("tests/golden/type_error.em", source, &diagnostics);
-    assert_eq!(actual, include_str!("golden/type_error.stderr"));
+    let expected = include_str!("golden/type_error.stderr");
+    assert_eq!(actual.replace("\r\n", "\n"), expected.replace("\r\n", "\n"));
 }
 
 #[test]
