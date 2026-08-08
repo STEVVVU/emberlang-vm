@@ -2,6 +2,9 @@
 name = "emberlang-vm"
 version = "0.1.0"
 edition = "2021"
+# MSRV is set by the dependency floor, not by anything the crate itself uses:
+# criterion 0.8 requires 1.86, clap 4.6 requires 1.85. Developed on 1.96.0.
+rust-version = "1.86"
 license = "MIT"
 description = "A small statically typed compiler and sandboxed bytecode VM"
 repository = "https://github.com/STEVVVU/emberlang-vm"
@@ -13,6 +16,15 @@ path = "src/main.rs"
 [[bin]]
 name = "benchmark"
 path = "src/bin/benchmark.rs"
+
+# Criterion drives its own CLI, so cargo's libtest harness must be disabled.
+[[bench]]
+name = "compiler"
+harness = false
+
+[[bench]]
+name = "vm"
+harness = false
 
 [profile.release]
 lto = "thin"
@@ -26,3 +38,22 @@ unsafe_code = "forbid"
 all = "warn"
 pedantic = "warn"
 
+[dependencies]
+# Rendered diagnostics: multi-span, labelled, underlined, optionally colored.
+ariadne = "0.6.0"
+# Derive-based CLI for the `ember` binary.
+clap = { version = "4.6.4", features = ["derive"] }
+# rustc's own non-cryptographic hasher, for compiler-internal maps keyed by
+# trusted data (register/label/name lookups). See docs/architecture.md.
+rustc-hash = "2.1.3"
+# Derived `Display`/`Error` for the VM's trap type.
+thiserror = "2.0.19"
+
+[dev-dependencies]
+# Statistical microbenchmarks. Default features (plotters/rayon) are off: they
+# pull in a large graph and this project only needs the console report.
+criterion = { version = "0.8.2", default-features = false, features = [
+    "cargo_bench_support",
+] }
+# Snapshot testing for diagnostics, IR dumps, and disassembly.
+insta = "1.48.0"
