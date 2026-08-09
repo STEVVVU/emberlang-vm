@@ -73,6 +73,7 @@ impl<'a> Lexer<'a> {
                             format!("unexpected character `{}`", &self.source[start..end]),
                             Span::new(start, end),
                         )
+                        .with_label("not part of any Ember token")
                         .with_help("remove the character or replace it with a valid token"),
                     );
                 }
@@ -123,6 +124,7 @@ impl<'a> Lexer<'a> {
                     "integer literal does not fit in signed 64-bit range",
                     Span::new(start, self.cursor),
                 )
+                .with_label("this literal overflows `int`")
                 .with_help("use a value between -9223372036854775808 and 9223372036854775807"),
             ),
         }

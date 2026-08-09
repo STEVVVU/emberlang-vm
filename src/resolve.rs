@@ -1,7 +1,7 @@
 use crate::ast::{Block, Expr, ExprKind, Program, Stmt};
+use crate::collections::HashMap;
 use crate::diagnostic::Diagnostic;
 use crate::span::Span;
-use std::collections::HashMap;
 
 #[must_use]
 pub fn resolve(program: &Program) -> Vec<Diagnostic> {
@@ -16,7 +16,7 @@ struct Resolver {
 
 impl Resolver {
     fn new(program: &Program) -> Self {
-        let mut functions = HashMap::new();
+        let mut functions = HashMap::default();
         let mut diagnostics = Vec::new();
         for function in &program.functions {
             if let Some(previous) = functions.insert(function.name.clone(), function.name_span) {
@@ -26,9 +26,8 @@ impl Resolver {
                         format!("function `{}` is defined more than once", function.name),
                         function.name_span,
                     )
-                    .with_note(format!(
-                        "the previous definition is at byte span {previous}"
-                    ))
+                    .with_label("redefined here")
+                    .with_secondary(previous, "first defined here")
                     .with_help("rename or remove one of the functions"),
                 );
             }
@@ -156,16 +155,15 @@ impl Resolver {
                     format!("{kind} `{name}` is already defined in this scope"),
                     span,
                 )
-                .with_note(format!(
-                    "the previous definition is at byte span {previous}"
-                ))
+                .with_label(format!("this {kind} shadows the one above"))
+                .with_secondary(previous, format!("`{name}` first defined here"))
                 .with_help(format!("choose a different {kind} name")),
             );
         }
     }
 
     fn unknown_name(&mut self, name: &str, span: Span, kind: &str) {
-        let candidates: Vec<&str> = if kind == "function" {
+        let mut candidates: Vec<&str> = if kind == "function" {
             self.functions.keys().map(String::as_str).collect()
         } else {
             self.scopes
@@ -173,7 +171,13 @@ impl Resolver {
                 .flat_map(|scope| scope.keys().map(String::as_str))
                 .collect()
         };
-        let mut diagnostic = Diagnostic::error("E3004", format!("unknown {kind} `{name}`"), span);
+        // Hash-map iteration order is not a stable contract, so sort before
+        // picking a suggestion. Otherwise two names at the same edit distance
+        // would tie-break differently between runs and the suggested spelling
+        // in the diagnostic would not be reproducible.
+        candidates.sort_unstable();
+        let mut diagnostic = Diagnostic::error("E3004", format!("unknown {kind} `{name}`"), span)
+            .with_label(format!("no {kind} named `{name}` is in scope"));
         if let Some(candidate) = closest(name, &candidates) {
             diagnostic = diagnostic.with_help(format!("did you mean `{candidate}`?"));
         } else {
@@ -190,7 +194,7 @@ impl Resolver {
     }
 
     fn push_scope(&mut self) {
-        self.scopes.push(HashMap::new());
+        self.scopes.push(HashMap::default());
     }
 
     fn pop_scope(&mut self) {

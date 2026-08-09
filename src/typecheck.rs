@@ -1,7 +1,7 @@
 use crate::ast::{BinaryOp, Block, Expr, ExprKind, Function, Program, Stmt, TypeName, UnaryOp};
+use crate::collections::HashMap;
 use crate::diagnostic::Diagnostic;
 use crate::span::Span;
-use std::collections::HashMap;
 
 #[must_use]
 pub fn check(program: &Program) -> Vec<Diagnostic> {
@@ -97,7 +97,7 @@ impl Checker {
 
     fn block(&mut self, block: &Block, nested: bool) {
         if nested {
-            self.scopes.push(HashMap::new());
+            self.scopes.push(HashMap::default());
         }
         for statement in &block.statements {
             self.statement(statement);
@@ -225,16 +225,20 @@ impl Checker {
                         Diagnostic::error(
                             "E4004",
                             format!(
-                                "function `{callee}` expects {} arguments but received {}",
-                                signature.params.len(),
+                                "function `{callee}` expects {} but received {}",
+                                plural_arguments(signature.params.len()),
                                 args.len()
                             ),
                             expression.span,
                         )
-                        .with_note(format!(
-                            "`{callee}` is declared at byte span {}",
-                            signature.span
-                        )),
+                        .with_label(format!("call site passes {}", plural_arguments(args.len())))
+                        .with_secondary(
+                            signature.span,
+                            format!(
+                                "`{callee}` is declared here with {}",
+                                plural_parameters(signature.params.len())
+                            ),
+                        ),
                     );
                 }
                 for (index, (expected, actual)) in
@@ -308,6 +312,7 @@ impl Checker {
                         ),
                         span,
                     )
+                    .with_label(format!("this has type `{actual}`"))
                     .with_help(format!("use an expression of type `{expected}`")),
                 );
             }
@@ -319,6 +324,22 @@ impl Checker {
             .iter()
             .rev()
             .find_map(|scope| scope.get(name).copied())
+    }
+}
+
+fn plural_arguments(count: usize) -> String {
+    if count == 1 {
+        "1 argument".to_owned()
+    } else {
+        format!("{count} arguments")
+    }
+}
+
+fn plural_parameters(count: usize) -> String {
+    if count == 1 {
+        "1 parameter".to_owned()
+    } else {
+        format!("{count} parameters")
     }
 }
 

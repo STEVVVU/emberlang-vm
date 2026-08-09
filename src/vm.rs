@@ -34,7 +34,14 @@ pub struct Execution {
     pub max_depth: usize,
 }
 
-#[derive(Debug)]
+/// A trap raised by the VM: invalid bytecode, an arithmetic fault, or a
+/// resource-limit violation.
+///
+/// `thiserror` supplies the `Display`/`Error` impls, so a trap composes with
+/// `?`, `Box<dyn Error>`, and anything else that expects a real error type.
+/// [`VmError::diagnostic`] remains the richer, source-mapped presentation.
+#[derive(Clone, Debug, thiserror::Error)]
+#[error("{code}: {message}")]
 pub struct VmError {
     pub code: &'static str,
     pub message: String,
@@ -45,7 +52,8 @@ pub struct VmError {
 impl VmError {
     #[must_use]
     pub fn diagnostic(&self) -> Diagnostic {
-        let mut diagnostic = Diagnostic::error(self.code, &self.message, self.span);
+        let mut diagnostic = Diagnostic::error(self.code, &self.message, self.span)
+            .with_label("trapped while executing this");
         if !self.stack.is_empty() {
             diagnostic = diagnostic.with_note(format!("call stack: {}", self.stack.join(" -> ")));
         }
