@@ -1,0 +1,10 @@
+---
+source: tests/snapshots.rs
+expression: compilation.ir.to_string()
+---
+fn main (params=0, regs=13) -> int:
+  %7 = const 40
+  print %7
+  %12 = const 0
+  return %12
+  return

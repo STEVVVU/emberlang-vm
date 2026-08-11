@@ -1,0 +1,38 @@
+---
+source: tests/snapshots.rs
+expression: compilation.bytecode.disassemble()
+---
+function 0 classify (params=1, registers=9) -> int
+  0000  CONST         r1, 0
+  0001  Less       r2, r0, r1
+  0002  JUMP_IF_FALSE r2, 0007
+  0003  JUMP          0004
+  0004  CONST         r4, -1
+  0005  RETURN        r4
+  0006  JUMP          0018
+  0007  CONST         r5, 0
+  0008  Equal       r6, r0, r5
+  0009  JUMP_IF_FALSE r6, 0014
+  0010  JUMP          0011
+  0011  CONST         r7, 0
+  0012  RETURN        r7
+  0013  JUMP          0017
+  0014  CONST         r8, 1
+  0015  RETURN        r8
+  0016  JUMP          0017
+  0017  JUMP          0018
+  0018  RETURN
+
+function 1 main (params=0, registers=8) -> int
+  0000  CONST         r1, -4
+  0001  CALL          r2, classify(r1)
+  0002  PRINT         r2
+  0003  CONST         r3, 0
+  0004  CALL          r4, classify(r3)
+  0005  PRINT         r4
+  0006  CONST         r5, 9
+  0007  CALL          r6, classify(r5)
+  0008  PRINT         r6
+  0009  CONST         r7, 0
+  0010  RETURN        r7
+  0011  RETURN

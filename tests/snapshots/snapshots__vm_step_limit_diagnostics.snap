@@ -1,0 +1,15 @@
+---
+source: tests/snapshots.rs
+expression: "error.diagnostic().render(\"limit.em\", source)"
+---
+[E7104] Error: execution exceeded step limit of 12
+   ,-[ limit.em:2:5 ]
+   |
+ 2 | ,->     while true {
+   : :
+ 4 | |->     }
+   | |
+   | `----------- trapped while executing this
+   |
+   |     Note: call stack: main
+---'

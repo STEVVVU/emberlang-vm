@@ -1,4 +1,3 @@
-use emberlang_vm::diagnostic::render_all;
 use emberlang_vm::vm::{execute, VmLimits};
 use emberlang_vm::{compile, CompileOptions};
 
@@ -34,13 +33,18 @@ fn optimized_and_unoptimized_programs_match() {
     assert!(optimized_size < baseline_size);
 }
 
+/// The exact rendered text of this diagnostic is asserted by the committed
+/// snapshot in `tests/snapshots.rs` (it replaced the former
+/// `golden/type_error.stderr` file). What stays here is the pipeline-level
+/// contract: this source must fail, and must fail in the type checker with the
+/// stable `E4006` code, whatever the renderer happens to look like.
 #[test]
-fn golden_type_error_is_stable() {
+fn type_error_fails_with_a_stable_code() {
     let source = include_str!("golden/type_error.em");
     let diagnostics = compile(source, CompileOptions::default()).unwrap_err();
-    let actual = render_all("tests/golden/type_error.em", source, &diagnostics);
-    let expected = include_str!("golden/type_error.stderr");
-    assert_eq!(actual.replace("\r\n", "\n"), expected.replace("\r\n", "\n"));
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].code, "E4006");
+    assert!(diagnostics[0].span.end > diagnostics[0].span.start);
 }
 
 #[test]

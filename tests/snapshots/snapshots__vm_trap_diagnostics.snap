@@ -1,0 +1,13 @@
+---
+source: tests/snapshots.rs
+expression: "error.diagnostic().render(\"trap.em\", source)"
+---
+[E7202] Error: division by zero
+   ,-[ trap.em:3:12 ]
+   |
+ 3 |     return 10 / divisor;
+   |            |^^^^^^^^^^^
+   |            `------------- trapped while executing this
+   |
+   | Note: call stack: main
+---'

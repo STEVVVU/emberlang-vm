@@ -1,0 +1,19 @@
+---
+source: tests/snapshots.rs
+expression: "render_errors(\"tests/golden/parse_error.em\", source)"
+---
+[E2021] Error: expected expression, found `;`
+   ,-[ tests/golden/parse_error.em:2:22 ]
+   |
+ 2 |     let value: int = ;
+   |                      |
+   |                      `-- parse stopped here
+---'
+
+[E2015] Error: expected `;` after return
+   ,-[ tests/golden/parse_error.em:4:1 ]
+   |
+ 4 | }
+   | |
+   | `-- parse stopped here
+---'

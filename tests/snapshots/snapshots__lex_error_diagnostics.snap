@@ -1,0 +1,21 @@
+---
+source: tests/snapshots.rs
+expression: "render_errors(\"tests/golden/lex_error.em\", source)"
+---
+[E1001] Error: unexpected character `@`
+   ,-[ tests/golden/lex_error.em:2:24 ]
+   |
+ 2 |     let value: int = 1 @ 2;
+   |                        |
+   |                        `-- not part of any Ember token
+   |
+   | Help: remove the character or replace it with a valid token
+---'
+
+[E2012] Error: expected `;` after variable declaration
+   ,-[ tests/golden/lex_error.em:2:26 ]
+   |
+ 2 |     let value: int = 1 @ 2;
+   |                          |
+   |                          `-- parse stopped here
+---'

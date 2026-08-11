@@ -1,0 +1,29 @@
+---
+source: tests/snapshots.rs
+expression: compilation.bytecode.disassemble()
+---
+function 0 fibonacci (params=1, registers=12) -> int
+  0000  CONST         r2, 0
+  0001  CONST         r4, 1
+  0002  CONST         r6, 0
+  0003  Less       r7, r6, r0
+  0004  JUMP_IF_FALSE r7, 0014
+  0005  JUMP          0006
+  0006  Add       r8, r2, r4
+  0007  COPY          r9, r8
+  0008  COPY          r2, r4
+  0009  COPY          r4, r9
+  0010  CONST         r10, 1
+  0011  Add       r11, r6, r10
+  0012  COPY          r6, r11
+  0013  JUMP          0003
+  0014  RETURN        r2
+  0015  RETURN
+
+function 1 main (params=0, registers=3) -> int
+  0000  CONST         r0, 10
+  0001  CALL          r1, fibonacci(r0)
+  0002  PRINT         r1
+  0003  CONST         r2, 0
+  0004  RETURN        r2
+  0005  RETURN

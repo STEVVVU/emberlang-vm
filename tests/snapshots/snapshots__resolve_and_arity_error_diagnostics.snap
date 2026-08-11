@@ -1,0 +1,39 @@
+---
+source: tests/snapshots.rs
+expression: "render_errors(\"tests/golden/resolve_error.em\", source)"
+---
+[E3001] Error: function `helper` is defined more than once
+   ,-[ tests/golden/resolve_error.em:5:4 ]
+   |
+ 1 | fn helper(value: int) -> int {
+   |    |^^^^^
+   |    `------- first defined here
+   |
+ 5 | fn helper(other: int) -> int {
+   |    |^^^^^
+   |    `------- redefined here
+   |
+   | Help: rename or remove one of the functions
+---'
+
+[E3004] Error: unknown variable `cout`
+    ,-[ tests/golden/resolve_error.em:11:11 ]
+    |
+ 11 |     print(cout);
+    |           |^^^
+    |           `----- no variable named `cout` is in scope
+    |
+    | Help: did you mean `count`?
+----'
+
+[E4004] Error: function `helper` expects 1 argument but received 2
+    ,-[ tests/golden/resolve_error.em:12:12 ]
+    |
+  5 | fn helper(other: int) -> int {
+    |    |^^^^^
+    |    `------- `helper` is declared here with 1 parameter
+    |
+ 12 |     return helper(count, 2);
+    |            |^^^^^^^^^^^^^^^
+    |            `----------------- call site passes 2 arguments
+----'

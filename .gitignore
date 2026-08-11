@@ -1,3 +1,7 @@
 /target/
 *.tmp
 
+# Pending insta snapshots. The accepted `.snap` files ARE committed; only the
+# unreviewed staging files that `cargo insta` writes are ignored.
+*.snap.new
+*.pending-snap
