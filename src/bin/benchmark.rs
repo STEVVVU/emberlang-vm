@@ -1,3 +1,17 @@
+//! End-to-end benchmark harness that emits the committed JSON baseline.
+//!
+//! This is deliberately kept alongside the criterion suites in `benches/`; the
+//! two answer different questions and neither replaces the other:
+//!
+//! * `cargo bench` (criterion) is for *comparison* — per-stage latency with
+//!   confidence intervals and `--save-baseline`/`--baseline` regression checks.
+//!   Its reports are machine-local HTML/JSON under `target/`, not artifacts.
+//! * this binary is for *evidence* — one deterministic, dependency-free run that
+//!   prints a single JSON document, including the optimizer counters and total
+//!   retired instruction count that back the README's claims. It is what
+//!   `benchmarks/results-*.json` is generated from, and what CI smoke-runs,
+//!   because it needs no criterion and finishes in seconds.
+
 use emberlang_vm::vm::{execute, VmLimits};
 use emberlang_vm::{compile, CompileOptions};
 use std::fmt::Write;
