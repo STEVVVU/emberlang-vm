@@ -1,6 +1,6 @@
 use crate::ast::{BinaryOp, UnaryOp};
+use crate::collections::HashMap;
 use crate::ir::{IrInstruction, IrKind, IrProgram, Reg, Value};
-use std::collections::HashMap;
 
 pub fn optimize(program: &mut IrProgram) {
     for function in &mut program.functions {
@@ -11,7 +11,7 @@ pub fn optimize(program: &mut IrProgram) {
 }
 
 fn fold_constants(instructions: &mut [IrInstruction]) -> usize {
-    let mut constants: HashMap<Reg, Value> = HashMap::new();
+    let mut constants: HashMap<Reg, Value> = HashMap::default();
     let mut folded = 0;
     for instruction in instructions {
         match instruction.kind.clone() {
@@ -83,7 +83,7 @@ fn fold_constants(instructions: &mut [IrInstruction]) -> usize {
 fn eliminate_dead_results(instructions: &mut Vec<IrInstruction>) -> usize {
     let original_len = instructions.len();
     loop {
-        let mut uses: HashMap<Reg, usize> = HashMap::new();
+        let mut uses: HashMap<Reg, usize> = HashMap::default();
         for instruction in &*instructions {
             for register in instruction.used_registers() {
                 *uses.entry(register).or_default() += 1;

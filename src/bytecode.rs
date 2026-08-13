@@ -1,7 +1,7 @@
 use crate::ast::{BinaryOp, TypeName, UnaryOp};
+use crate::collections::HashMap;
 use crate::ir::{IrKind, IrProgram, Label, Reg, Value};
 use crate::span::Span;
-use std::collections::HashMap;
 use std::fmt::Write;
 
 #[derive(Clone, Debug)]
@@ -89,7 +89,7 @@ fn generate_function(
     function: &crate::ir::IrFunction,
     function_names: &HashMap<String, usize>,
 ) -> BytecodeFunction {
-    let mut labels: HashMap<Label, usize> = HashMap::new();
+    let mut labels: HashMap<Label, usize> = HashMap::default();
     let mut offset = 0;
     for instruction in &function.instructions {
         if let IrKind::Label(label) = instruction.kind {

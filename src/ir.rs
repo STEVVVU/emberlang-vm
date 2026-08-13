@@ -1,6 +1,6 @@
 use crate::ast::{self, BinaryOp, Block, Expr, ExprKind, Program, Stmt, TypeName, UnaryOp};
+use crate::collections::{HashMap, HashSet};
 use crate::span::Span;
-use std::collections::{HashMap, HashSet};
 use std::fmt;
 
 pub type Reg = usize;
@@ -140,10 +140,10 @@ pub fn lower(program: &Program) -> IrProgram {
 fn lower_function(function: &ast::Function) -> IrFunction {
     let mut lowerer = FunctionLowerer {
         instructions: Vec::new(),
-        scopes: vec![HashMap::new()],
+        scopes: vec![HashMap::default()],
         next_register: 0,
         next_label: 0,
-        variable_registers: HashSet::new(),
+        variable_registers: HashSet::default(),
     };
     for parameter in &function.params {
         let register = lowerer.new_variable();
@@ -179,7 +179,7 @@ struct FunctionLowerer {
 impl FunctionLowerer {
     fn block(&mut self, block: &Block, nested: bool) {
         if nested {
-            self.scopes.push(HashMap::new());
+            self.scopes.push(HashMap::default());
         }
         for statement in &block.statements {
             self.statement(statement);
