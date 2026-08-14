@@ -148,6 +148,12 @@ fn fibonacci_disassembly() {
 /// The colored style is exercised so a change to it cannot slip through
 /// unnoticed, but only its *shape* is asserted: the escape sequences themselves
 /// are terminal-dependent and deliberately never snapshotted.
+///
+/// This asserted escapes long before it reliably produced them: ariadne paints
+/// via `yansi`, whose global switch defaults to probing for an attached console,
+/// so a detached process rendered `Colored` with no escapes at all and this test
+/// failed on spawn method rather than on any code change.
+/// `RenderStyle::Colored` now pins that switch on; see `src/diagnostic.rs`.
 #[test]
 fn colored_style_wraps_the_same_content() {
     let source = include_str!("golden/type_error.em");

@@ -48,6 +48,13 @@ clap = { version = "4.6.4", features = ["derive"] }
 rustc-hash = "2.1.3"
 # Derived `Display`/`Error` for the VM's trap type.
 thiserror = "2.0.19"
+# Already in the tree as ariadne's colour backend; declared directly only to
+# reach `yansi::enable()`. Ariadne re-exports `Color` but not the global colour
+# switch, and that switch defaults to probing the *attached console* — see
+# `RenderStyle::Colored` in `src/diagnostic.rs` for why that must be overridden.
+# The requirement matches the range ariadne asks for so cargo unifies both on one
+# crate instance: two copies would mean two independent globals and no effect.
+yansi = "1.0.1"
 
 [dev-dependencies]
 # Statistical microbenchmarks. Default features (plotters/rayon) are off: they

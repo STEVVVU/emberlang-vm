@@ -34,7 +34,25 @@ impl RenderStyle {
             .with_label_attach(LabelAttach::Start);
         match self {
             Self::Plain => config.with_color(false).with_char_set(CharSet::Ascii),
-            Self::Colored => config.with_color(true).with_char_set(CharSet::Unicode),
+            Self::Colored => {
+                // Ariadne paints through `yansi`, whose *process-global* switch
+                // defaults to `Condition::os_support`. On Windows that opens
+                // `CONOUT$` and calls `SetConsoleMode`, so it yields `false`
+                // whenever no console can be attached — a detached or
+                // service-hosted process, and notably a `cargo test` child under
+                // some harnesses. The effect was that `Colored` silently
+                // degraded to uncolored text and the test asserting escapes
+                // failed depending only on how the process had been spawned.
+                //
+                // Deciding *whether* to colorize is the caller's job (the CLI
+                // resolves `--color`), so once `Colored` is explicitly asked for,
+                // pin the global on rather than letting a console probe overrule
+                // it. Idempotent, thread-safe (a single atomic store), and it
+                // cannot affect `Plain`: `with_color(false)` makes every ariadne
+                // colour `None`, which bypasses `yansi::Paint` altogether.
+                yansi::enable();
+                config.with_color(true).with_char_set(CharSet::Unicode)
+            }
         }
     }
 }
@@ -226,6 +244,7 @@ pub fn render_all_with(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::sync::{Mutex, MutexGuard, PoisonError};
 
     #[test]
     fn renders_location_and_help() {
@@ -256,8 +275,21 @@ mod tests {
         assert!(!rendered.contains('\r'), "carriage return in plain output");
     }
 
+    /// Serializes the tests that read or write `yansi`'s process-global colour
+    /// switch. Rust runs tests in threads within one process, so without this
+    /// two of them would race on that global and fail intermittently.
+    static COLOR_GLOBAL: Mutex<()> = Mutex::new(());
+
+    /// Locks [`COLOR_GLOBAL`], ignoring poisoning: the guard protects a global
+    /// that has no invariant to corrupt, so one failing test should not cascade
+    /// into the others.
+    fn lock_color_global() -> MutexGuard<'static, ()> {
+        COLOR_GLOBAL.lock().unwrap_or_else(PoisonError::into_inner)
+    }
+
     #[test]
     fn colored_style_is_opt_in() {
+        let _guard = lock_color_global();
         let source = "let x = true;\n";
         let rendered = Diagnostic::error("E1", "bad value", Span::new(8, 12)).render_with(
             "test.em",
@@ -265,6 +297,50 @@ mod tests {
             RenderStyle::Colored,
         );
         assert!(rendered.contains('\u{1b}'), "expected ANSI escapes");
+    }
+
+    /// `Colored` must not depend on whether a console is attached to the
+    /// process. Regression test: ariadne's colour backend (`yansi`) defaults to
+    /// probing `CONOUT$` on Windows, so before `RenderStyle::config` pinned that
+    /// global switch, this rendered *without* escapes in a detached process — the
+    /// assertion above failed purely because of how the process had been spawned.
+    ///
+    /// `yansi::disable()` reproduces the state a failed probe leaves behind,
+    /// without having to detach a real process.
+    #[test]
+    fn colored_style_survives_a_disabled_color_global() {
+        let _guard = lock_color_global();
+        let source = "let x = true;\n";
+        yansi::disable();
+        let rendered = Diagnostic::error("E1", "bad value", Span::new(8, 12)).render_with(
+            "test.em",
+            source,
+            RenderStyle::Colored,
+        );
+        assert!(
+            rendered.contains('\u{1b}'),
+            "colored render lost its escapes to the global color switch"
+        );
+
+        // Plain must stay escape-free and ASCII regardless of that same global,
+        // with the switch off and then on: it is the snapshot-facing style, and
+        // it must never acquire an escape from a neighbouring colored render.
+        for _ in 0..2 {
+            yansi::disable();
+            assert_plain_is_portable(source);
+            yansi::enable();
+            assert_plain_is_portable(source);
+        }
+    }
+
+    /// Asserts the invariant the committed snapshots depend on: plain renders are
+    /// pure ASCII with no escapes, so Windows and Linux agree byte for byte.
+    fn assert_plain_is_portable(source: &str) {
+        let plain = Diagnostic::error("E1", "bad value", Span::new(8, 12))
+            .with_label("expected int")
+            .render("test.em", source);
+        assert!(!plain.contains('\u{1b}'), "ANSI escape in plain output");
+        assert!(plain.is_ascii(), "non-ASCII byte in plain output");
     }
 
     #[test]
