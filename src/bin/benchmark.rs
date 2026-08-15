@@ -69,6 +69,12 @@ fn main() {
     println!("  \"source_bytes\": {},", source.len());
     println!("  \"source_functions\": 81,");
     println!("  \"compile_iterations\": {COMPILE_ITERATIONS},");
+    // The minimum is reported alongside the median because it is the statistic
+    // least contaminated by background load: noise can only ever make a sample
+    // slower, so the fastest observed compile is the closest available estimate
+    // of the work itself. On a busy machine the median drifts run to run while
+    // the minimum stays stable.
+    println!("  \"compile_min_us\": {},", micros(compile_samples[0]));
     println!(
         "  \"compile_median_us\": {},",
         micros(compile_samples[COMPILE_ITERATIONS / 2])
