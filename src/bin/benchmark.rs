@@ -64,7 +64,10 @@ fn main() {
     let steps_per_second = u128::from(vm_steps) * 1_000_000 / vm_elapsed.as_micros().max(1);
 
     println!("{{");
-    println!("  \"schema\": 1,");
+    // Bumped to 2 when `compile_min_us` was added: a consumer written against
+    // schema 1 must not silently read this output as if the field set were
+    // unchanged. `benchmarks/results-*.json` records the same number.
+    println!("  \"schema\": 2,");
     println!("  \"profile\": \"release\",");
     println!("  \"source_bytes\": {},", source.len());
     println!("  \"source_functions\": 81,");
