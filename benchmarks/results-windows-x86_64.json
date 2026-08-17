@@ -1,23 +1,53 @@
 {
-  "schema": 1,
-  "captured_at": "2026-07-16",
+  "schema": 2,
+  "captured_at": "2026-07-28",
   "command": "cargo run --release --bin benchmark",
   "environment": {
-    "os": "Windows x86_64",
+    "os": "Windows 11 x86_64",
     "rustc": "rustc 1.96.0 (ac68faa20 2026-05-25)",
-    "cpu": "not captured"
+    "cpu": "Intel Core Ultra 7 265U (14 logical CPUs)",
+    "notes": "Power-managed laptop, clocks not pinned, measured while ordinary interactive applications were running: sampled CPU utilization was ~100%. Timing figures are reported as envelopes rather than point claims. See run_to_run_spread.",
+    "unverified": "No cross-machine, cross-OS, or quiesced-machine figure is claimed. Nothing here was measured on Linux."
   },
   "profile": "release",
   "source_bytes": 8441,
   "source_functions": 81,
   "compile_iterations": 200,
-  "compile_median_us": 2197,
-  "compile_p95_us": 6716,
+  "compile_min_us": 916,
+  "compile_median_us": 1257,
+  "compile_p95_us": 1909,
   "bytecode_instructions": 336,
   "constants_folded": 402,
   "dead_instructions_removed": 722,
   "vm_iterations": 50,
   "vm_total_steps": 5000400,
-  "vm_elapsed_us": 50922,
-  "vm_steps_per_second": 98197242
+  "vm_elapsed_us": 34480,
+  "vm_steps_per_second": 145023201,
+  "run_to_run_spread": {
+    "comment": "32 consecutive invocations of the same release binary on the same machine, pooled from two batches (12 then 20). The run recorded above is the one whose compile median is closest to the pooled median: it is representative, not the best observed. The spread is machine noise rather than variation in the compiler, because every field under identical_in_every_run was byte-identical in all 32 runs.",
+    "invocations": 32,
+    "compile_min_us": { "min": 771, "median": 884, "max": 984 },
+    "compile_median_us": { "min": 1056, "median": 1258, "max": 1473 },
+    "compile_p95_us": { "min": 1656, "median": 2524, "max": 20267 },
+    "vm_steps_per_second": {
+      "min": 19752559,
+      "median": 128778475,
+      "max": 153039113
+    },
+    "identical_in_every_run": {
+      "bytecode_instructions": 336,
+      "constants_folded": 402,
+      "dead_instructions_removed": 722,
+      "vm_total_steps": 5000400,
+      "source_bytes": 8441,
+      "source_functions": 81
+    },
+    "observed_spread": {
+      "compile_min_us": "1.3x",
+      "compile_median_us": "1.4x",
+      "compile_p95_us": "12.2x",
+      "vm_steps_per_second": "7.7x",
+      "note": "p95 and VM throughput are the statistics most exposed to preemption; compile_min is the most stable, which is why the harness emits it. The two batches disagreed by more than 5x on the lowest VM sample, so neither batch is quoted alone and the pooled envelope is what the README cites."
+    }
+  }
 }
