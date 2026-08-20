@@ -44,13 +44,22 @@ Diagnostics use stable error codes, source locations, underlines, notes, and
 actionable help:
 
 ```text
-error[E4006]: initializer type does not match annotation: expected `int`, found `bool`
- --> tests/golden/type_error.em:2:5
-  |
-2 |     let attempts: int = true;
-  |     ^^^^^^^^^^^^^^^^^^^^^^^^^
- help: use an expression of type `int`
+[E4006] Error: initializer type does not match annotation: expected `int`, found `bool`
+   ,-[ tests/golden/type_error.em:2:5 ]
+   |
+ 2 |     let attempts: int = true;
+   |     |^^^^^^^^^^^^^^^^^^^^^^^^
+   |     `-------------------------- this has type `bool`
+   |
+   | Help: use an expression of type `int`
+---'
 ```
+
+That is verbatim `ember check tests/golden/type_error.em --color never`, and it is
+byte-for-byte what `tests/snapshots/snapshots__type_error_diagnostics.snap`
+asserts. Rendering is `ariadne`'s; `--color never` (and any non-terminal stderr)
+selects an ASCII, escape-free style so piped and captured output is identical on
+every platform. `--color always` adds ANSI color and Unicode gutters.
 
 ## Example
 
@@ -118,12 +127,16 @@ not an omission:
 
 The tradeoff is real and worth naming: a grammar file is a better *specification*
 than a recursive-descent parser, and it makes ambiguity a build error rather than a
-subtle precedence bug. The grammar is therefore written out explicitly in
-[`docs/architecture.md`](docs/architecture.md) and kept in sync by the parser
-tests. A larger language, or one whose syntax changed often, would tip this the
-other way. Libraries *are* used where they are the industry answer and not the
+subtle precedence bug. The grammar is therefore written out explicitly under
+[Language in `docs/architecture.md`](docs/architecture.md) instead of being
+implied by the code. A larger language, or one whose syntax changed often, would
+tip this decision the other way.
+
+Libraries *are* used wherever they are the industry answer rather than the
 exercise: `ariadne` renders diagnostics, `clap` parses argv, `criterion` and
-`insta` handle benchmarking and snapshots, `rustc-hash` backs the internal tables.
+`insta` handle benchmarking and snapshot testing, `rustc-hash` backs the
+compiler-internal tables. The hand-written code is the compiler, not the plumbing
+around it.
 
 ## Safety and Determinism
 
