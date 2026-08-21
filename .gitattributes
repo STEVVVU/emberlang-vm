@@ -1,0 +1,49 @@
+# Line endings are normalized to LF in the repository and checked out as LF on
+# every platform, Windows included.
+#
+# This is load-bearing, not cosmetic. The committed fixtures under
+# `tests/snapshots/` and `tests/golden/` are compared byte for byte, and
+# `benchmarks/results-windows-x86_64.json` is parsed. A clone with
+# `core.autocrlf=true` -- the default the Windows git installer offers -- would
+# rewrite all of them to CRLF on checkout, breaking the snapshot comparisons on
+# a machine where nothing about the code had changed.
+#
+# CI's byte guard cannot substitute for this file, and that is the point: CR
+# (0x0d) is an ASCII character, so a scan for escapes and non-ASCII bytes passes
+# straight over a CRLF-ified snapshot. The guard now checks for CR explicitly as
+# a backstop, but this file is what actually prevents the rewrite.
+* text eol=lf
+
+# Stated again for the files whose bytes are asserted, so the guarantee is
+# visible where someone editing a fixture will look for it.
+*.snap    text eol=lf
+*.stderr  text eol=lf
+*.em      text eol=lf
+*.rs      text eol=lf
+*.json    text eol=lf
+*.toml    text eol=lf
+*.yml     text eol=lf
+*.md      text eol=lf
+
+# `* text eol=lf` above marks *everything* as text, which would corrupt a binary
+# blob by rewriting bytes that happen to look like line endings. No binary file
+# is tracked today; these entries keep it that way if one is ever added.
+*.png     binary
+*.jpg     binary
+*.jpeg    binary
+*.gif     binary
+*.ico     binary
+*.pdf     binary
+*.zip     binary
+*.gz      binary
+*.xz      binary
+*.exe     binary
+*.dll     binary
+*.pdb     binary
+*.so      binary
+*.dylib   binary
+*.a       binary
+*.lib     binary
+*.rlib    binary
+*.wasm    binary
+*.bin     binary

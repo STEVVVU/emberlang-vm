@@ -1,6 +1,0 @@
-error[E4006]: initializer type does not match annotation: expected `int`, found `bool`
- --> tests/golden/type_error.em:2:5
-  |
-2 |     let attempts: int = true;
-  |     ^^^^^^^^^^^^^^^^^^^^^^^^^
- help: use an expression of type `int`
