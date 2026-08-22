@@ -28,20 +28,24 @@ jobs:
       - run: cargo fmt --all -- --check
       - run: cargo clippy --all-targets --all-features -- -D warnings
 
+      # Runs the suite and guards against a vacuous pass in one step: count the
+      # tests that actually reported a result and fail if the suite shrank.
+      # `cargo test` exits 0 on "0 passed", which is how a silently-empty suite
+      # would otherwise stay green.
+      #
       # `--all-targets` also builds the benches, so a bench that stops compiling
       # fails here rather than at release time.
-      - name: Test
-        run: cargo test --all-targets
-
-      # Guard against a vacuous pass: count the tests that actually reported a
-      # result and fail if the suite shrank. `cargo test` exits 0 on "0 passed",
-      # which is how a silently-empty suite would otherwise stay green.
-      - name: Assert the suite is not empty
+      #
+      # This deliberately does not run `cargo test` twice. `pipefail` means a test
+      # failure still fails the step even though cargo's exit status is consumed by
+      # the pipe, so a single run covers both "the tests pass" and "there are
+      # enough of them".
+      - name: Test and assert the suite is not empty
         shell: bash
         run: |
           set -euo pipefail
           # Summed with awk, not bc: bc is not installed on the Windows runner.
-          total=$(cargo test --all-targets 2>&1 \
+          total=$(cargo test --all-targets 2>&1 | tee /dev/stderr \
             | awk '/^test result: ok\./ { sum += $4 } END { print sum + 0 }')
           echo "tests passed: ${total} (floor: ${MIN_TESTS})"
           if [ "${total}" -lt "${MIN_TESTS}" ]; then
