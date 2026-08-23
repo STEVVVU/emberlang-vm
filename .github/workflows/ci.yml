@@ -69,21 +69,21 @@ jobs:
       # Diagnostics are rendered ASCII-only and escape-free so the same snapshot
       # verifies on Linux and Windows. Assert that on the committed bytes, not
       # just in the test suite: an ANSI escape or box-drawing character reaching a
-      # snapshot is what made these platform-dependent before.
-      - name: Assert snapshots are platform-independent bytes
+      # snapshot is what made these platform-dependent before. CR and BOM are
+      # covered too -- CR especially, since it is ASCII and so invisible to the
+      # other two scans, and it is what a `core.autocrlf=true` clone introduces.
+      #
+      # `benchmarks/results-windows-x86_64.json` is scanned alongside the snapshots
+      # because it is parsed, not just compared, so a stray byte there breaks the
+      # parse rather than a diff.
+      #
+      # Reads the bytes in Python rather than with `grep -P`: on the Windows runner
+      # that grep strips CR before matching and cannot match non-UTF-8 bytes at
+      # all, which made the shell form of these checks a silent no-op. The script
+      # documents each failure mode.
+      - name: Assert committed fixtures are platform-independent bytes
         shell: bash
-        run: |
-          set -euo pipefail
-          if grep -rlP '\x1b' tests/snapshots tests/golden 2>/dev/null | grep .; then
-            echo "::error::ANSI escape byte found in a committed snapshot or golden file."
-            exit 1
-          fi
-          if grep -rlP '[^\x00-\x7f]' tests/snapshots tests/golden 2>/dev/null | grep .; then
-            echo "::error::Non-ASCII byte (box drawing?) found in a committed snapshot."
-            exit 1
-          fi
-          echo "snapshots are pure ASCII with no escapes"
-
+        run: python3 scripts/check_fixture_bytes.py
       - run: cargo build --release
 
   benchmark-smoke:
