@@ -84,6 +84,15 @@ jobs:
       - name: Assert committed fixtures are platform-independent bytes
         shell: bash
         run: python3 scripts/check_fixture_bytes.py
+
+      # The published figures live in exactly one place -- the committed benchmark
+      # artifact -- and this asserts that the artifact, the README tables, and the
+      # running prose all still agree. Previously these constants were duplicated
+      # into this workflow; see scripts/check_documented_metrics.py.
+      - name: Assert the documented metrics match the artifact
+        shell: bash
+        run: python3 scripts/check_documented_metrics.py
+
       - run: cargo build --release
 
   benchmark-smoke:
@@ -94,30 +103,17 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       # The committed-evidence harness. Timings from a shared runner are not
       # meaningful, so this only proves the harness still runs and emits JSON.
+      # Written with a redirect rather than `tee`: nothing reads the harness output
+      # on the console, and the file is the artifact under test.
       - name: Run the benchmark harness
-        run: cargo run --release --bin benchmark | tee result.json
-      - name: Assert it emitted well-formed JSON with the expected fields
-        run: |
-          python3 - <<'PY'
-          import json
-          d = json.load(open('result.json'))
-          required = [
-              'schema', 'profile', 'source_bytes', 'compile_iterations',
-              'compile_min_us', 'compile_median_us', 'compile_p95_us',
-              'bytecode_instructions', 'constants_folded',
-              'dead_instructions_removed', 'vm_total_steps',
-              'vm_steps_per_second',
-          ]
-          missing = [k for k in required if k not in d]
-          assert not missing, f'benchmark JSON lost fields: {missing}'
-          # Deterministic properties of the compiler, not of the clock: these must
-          # not drift. Timings are deliberately NOT asserted -- see benchmarks/README.md.
-          assert d['bytecode_instructions'] == 336, d['bytecode_instructions']
-          assert d['constants_folded'] == 402, d['constants_folded']
-          assert d['dead_instructions_removed'] == 722, d['dead_instructions_removed']
-          assert d['vm_total_steps'] == 5000400, d['vm_total_steps']
-          print('benchmark output OK; deterministic counters unchanged')
-          PY
+        run: cargo run --release --bin benchmark > result.json
+
+      # Asserts the JSON is well-formed, kept its required fields, and reproduced
+      # the deterministic compiler counters -- read from the committed artifact
+      # rather than restated here, so 336/402/722/5000400 live in exactly one file.
+      # Timings are deliberately NOT asserted; see benchmarks/README.md.
+      - name: Assert it reproduced the committed deterministic counters
+        run: python3 scripts/check_documented_metrics.py result.json
 
       # Criterion suites: compiled and executed once each via `--test`, never
       # timed. This catches a bench that stopped compiling or started panicking.

@@ -16,8 +16,18 @@ the other, so deleting either would lose something.
 ## 1. `benchmark` bin — committed evidence
 
 ```sh
-cargo run --release --bin benchmark
+cargo run --release --bin benchmark                          # print to stdout
+cargo run --release --bin benchmark > results-windows-x86_64.json
 ```
+
+The harness writes JSON to stdout, so regenerating the artifact means redirecting
+it. **On Windows, redirect from `cmd` or git-bash, not PowerShell 5.1**: its `>`
+writes UTF-16LE, and `Out-File`/`Tee-Object` add a BOM. Either produces an
+artifact that no longer parses as UTF-8 JSON while looking perfectly correct in an
+editor. From PowerShell 7+, use
+`| Out-File -Encoding utf8NoBOM results-windows-x86_64.json`.
+`scripts/check_fixture_bytes.py` fails on both encodings, so a slip here is caught
+rather than committed.
 
 Generates a deterministic 8,441-byte program containing 80 helper functions and
 one loop-heavy `main`, then measures:
