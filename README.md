@@ -30,15 +30,36 @@ Install the CLI locally with `cargo install --path . --bin ember`.
 
 ## CLI
 
+Every subcommand accepts the same input options: `[--no-opt] [--color WHEN]`,
+where `WHEN` is `auto` (default), `always`, or `never`.
+
 ```text
-ember check <file> [--no-opt]
-ember run <file> [--no-opt] [--max-steps N] [--max-call-depth N] [--max-output-bytes N]
-ember disassemble <file> [--no-opt]
+ember check       <file> [--no-opt] [--color WHEN]
+ember run         <file> [--no-opt] [--color WHEN] [LIMITS]
+ember disassemble <file> [--no-opt] [--color WHEN]
+ember ir          <file> [--no-opt] [--color WHEN]
 ```
 
 - `check` runs lexing through type checking and reports optimization counters.
 - `run` compiles and executes `main`, using its integer result as the exit code.
 - `disassemble` prints deterministic register bytecode with resolved jumps.
+- `ir` prints the register IR, before or after optimization depending on `--no-opt`.
+
+`run` additionally accepts `LIMITS`, which each lower or raise one VM bound. The
+sandbox is always enforced, so no flag can switch a limit off:
+
+```text
+--max-steps N                 (default 1,000,000)
+--max-call-depth N            (default 256)
+--max-output-bytes N          (default 1,000,000)
+--max-registers-per-frame N   (default 65,536)
+--max-functions N             (default 10,000)
+```
+
+`--color` exists because `auto` resolves against the real stream at parse time:
+piped or redirected stderr gets the plain ASCII renderer, which is what keeps
+captured diagnostics byte-identical across platforms. `always` and `never`
+override that decision explicitly.
 
 Diagnostics use stable error codes, source locations, underlines, notes, and
 actionable help:
