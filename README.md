@@ -1,10 +1,6 @@
-# Ember Compiler and VM
+# Compiler and Virtual Machine
 
-Ember is a compact, statically typed compiler toolchain written in Rust. It
-implements the work expected in a real compiler pipeline: source spans and
-parser recovery, lexical name resolution, type checking, an inspectable
-register IR, optimization passes, bytecode generation, diagnostics, and a
-resource-limited VM.
+A compiler and bytecode virtual machine written in Rust with parsing, name resolution, static type checking, optimization, bytecode generation, and source diagnostics.
 
 The language is intentionally small. The project is about compiler engineering,
 not unusual syntax or novelty features.
